@@ -1,0 +1,47 @@
+.hero-orb {
+  width: min(74%, 330px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background:
+    radial-gradient(
+      circle at 38% 32%,
+      #fff1c8 0 7%,
+      #d9b56fcc 8% 18%,
+      #c98f7352 19% 35%,
+      #65549730 36% 52%,
+      #0000 53%
+    ),
+    conic-gradient(
+      from 18deg,
+      #0000 0 14%,
+      #fff1c885 15% 18%,
+      #0000 19% 35%,
+      #d9b56f99 36% 40%,
+      #0000 41% 62%,
+      #8fb7a899 63% 67%,
+      #0000 68% 100%
+    );
+  position: relative;
+  filter: drop-shadow(0 0 18px #d9b56f3d) drop-shadow(0 36px 34px #0000006b);
+  box-shadow:
+    inset 0 0 0 1px #fff1c852,
+    inset 0 0 50px #d9b56f24,
+    0 0 80px #d9b56f1f;
+}
+
+.hero-orb::before,
+.hero-orb::after {
+  content: "";
+  border: 1px solid #fff1c84d;
+  border-radius: 999px;
+  position: absolute;
+  inset: 13%;
+  transform: rotate(-18deg);
+  box-shadow: 0 0 30px #d9b56f1f;
+}
+
+.hero-orb::after {
+  border-color: #8fb7a84a;
+  inset: 28%;
+  transform: rotate(28deg);
+}
