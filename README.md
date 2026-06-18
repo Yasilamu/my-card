@@ -1,8 +1,8 @@
-# my-card
+# 個人網站
 
 [開啟網站](https://yasilamu.github.io/my-card/)
 
-南臺科技大學 JavaScript 期末專題個人網站。打開 GitHub 後，可以直接點上面的連結進入網站，不需要輸入指令。
+南臺科技大學 JavaScript 期末專題個人網站。
 
 ## 內容
 
