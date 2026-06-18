@@ -6,52 +6,85 @@
     <title>馮顥元｜個人網站</title>
     <style>
       :root {
-        color: #f3efe6;
-        background: radial-gradient(circle at 16% 12%, #be935842, #0000 32%), radial-gradient(circle at 82% 8%, #5c508f3d, #0000 30%), radial-gradient(circle at 72% 76%, #25695c38, #0000 34%), linear-gradient(135deg, #0a0d12 0%, #111827 44%, #101514 100%);
+        color: #f4eee2;
+        background: #07090d;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         font-synthesis: none;
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        --gold: #e2bc72;
+        --copper: #c98261;
+        --sage: #92c8b0;
+        --violet: #7a65b8;
+        --panel: rgba(18, 24, 25, 0.72);
+        --line: rgba(239, 219, 178, 0.18);
+        --muted: #c9c2b7;
+        --glow-x: 50%;
+        --glow-y: 18%;
       }
 
       * { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
-      body { min-width: 320px; min-height: 100vh; margin: 0; }
+      body { min-width: 320px; min-height: 100vh; margin: 0; overflow-x: hidden; background: #07090d; }
       button, input { font: inherit; }
       a { color: inherit; }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background:
+          radial-gradient(circle at var(--glow-x) var(--glow-y), rgba(226, 188, 114, 0.24), transparent 26rem),
+          radial-gradient(circle at 82% 10%, rgba(122, 101, 184, 0.26), transparent 22rem),
+          radial-gradient(circle at 12% 74%, rgba(146, 200, 176, 0.17), transparent 24rem),
+          linear-gradient(135deg, #07090d 0%, #121926 48%, #0b1210 100%);
+        transition: background-position 0.2s ease-out;
+      }
+
+      body::after {
+        content: "";
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background:
+          linear-gradient(transparent 0, rgba(255,255,255,0.035) 50%, transparent 100%),
+          repeating-linear-gradient(135deg, transparent 0 12px, rgba(255,255,255,0.035) 13px);
+        mask-image: linear-gradient(to bottom, #000, transparent 88%);
+      }
+
+      #starfield {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        width: 100%;
+        height: 100%;
+        opacity: 0.85;
+      }
 
       .site-shell {
         width: min(1120px, 100% - 32px);
         margin: 0 auto;
-        padding: 40px 0 56px;
+        padding: 42px 0 60px;
         position: relative;
-      }
-
-      .site-shell::before {
-        content: "";
-        pointer-events: none;
-        opacity: 0.72;
-        background: linear-gradient(#0000 0, #f3d7aa0b 50%, #0000 100%), repeating-linear-gradient(135deg, #0000 0 11px, #ffffff06 12px);
-        position: fixed;
-        inset: 0;
-        z-index: -1;
       }
 
       .hero-section {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
         align-items: center;
         gap: 56px;
-        min-height: 560px;
-        padding: 48px 0 32px;
+        min-height: 590px;
+        padding: 52px 0 36px;
       }
 
+      .hero-copy { transform-style: preserve-3d; }
       .eyebrow, .section-label, .profile-topline {
-        color: #d9b56f;
+        color: var(--gold);
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        text-shadow: 0 12px 32px #d9b56f29;
+        text-shadow: 0 12px 32px rgba(226, 188, 114, 0.24);
         margin: 0 0 14px;
         font-size: 0.78rem;
         font-weight: 800;
@@ -59,20 +92,20 @@
 
       h1 {
         color: #fff9ed;
-        text-shadow: 0 22px 64px #00000080, 0 0 38px #d9b56f1f;
-        max-width: 720px;
+        text-shadow: 0 22px 64px rgba(0,0,0,0.55), 0 0 38px rgba(226,188,114,0.18);
+        max-width: 740px;
         margin: 0;
-        font-size: clamp(2.35rem, 6vw, 4.9rem);
-        font-weight: 850;
+        font-size: clamp(2.45rem, 6vw, 5rem);
+        font-weight: 900;
         line-height: 1.03;
       }
 
       .hero-text {
-        color: #c8c4ba;
+        color: var(--muted);
         max-width: 650px;
         margin: 24px 0 0;
         font-size: 1.05rem;
-        line-height: 1.8;
+        line-height: 1.82;
       }
 
       .hero-actions, .project-strip, .skill-list, .work-tags {
@@ -90,72 +123,115 @@
         justify-content: center;
         align-items: center;
         min-height: 46px;
-        font-weight: 800;
+        font-weight: 850;
         text-decoration: none;
-        transition: transform 0.18s, box-shadow 0.18s, background-color 0.18s, color 0.18s;
+        transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
         display: inline-flex;
+        position: relative;
+        overflow: hidden;
       }
+
+      .primary-action::after, .secondary-action::after, .input-group button::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(110deg, transparent 0 32%, rgba(255,255,255,0.42), transparent 68% 100%);
+        transform: translateX(-120%);
+        transition: transform 0.55s ease;
+      }
+
+      .primary-action:hover::after, .secondary-action:hover::after, .input-group button:hover::after { transform: translateX(120%); }
 
       .primary-action {
         color: #16110a;
-        background: linear-gradient(135deg, #fff1c8, #d9b56f 48%, #b66f4f);
+        background: linear-gradient(135deg, #fff1c8, var(--gold) 48%, var(--copper));
         padding: 0 22px;
-        box-shadow: 0 0 0 1px #fff1c861, 0 18px 42px #b66f4f38;
+        box-shadow: 0 0 0 1px rgba(255,241,200,0.38), 0 18px 42px rgba(185,106,77,0.25);
       }
 
       .secondary-action {
         color: #f5ead8;
-        background: #121718b8;
-        border: 1px solid #d9b56f52;
+        background: rgba(18,23,24,0.72);
+        border: 1px solid rgba(226,188,114,0.33);
         padding: 0 20px;
-        box-shadow: inset 0 0 24px #d9b56f0f;
+        box-shadow: inset 0 0 24px rgba(226,188,114,0.08);
       }
 
-      .primary-action:hover, .secondary-action:hover, .input-group button:hover, .del-btn:hover { transform: translateY(-2px); }
+      .primary-action:hover, .secondary-action:hover, .input-group button:hover, .del-btn:hover {
+        transform: translateY(-3px);
+      }
 
       .hero-visual {
-        background: radial-gradient(circle at 22% 18%, #fff1c82e, #0000 28%), radial-gradient(circle at 78% 72%, #65549740, #0000 32%), linear-gradient(145deg, #151b1ff5 0%, #1b2324e6 55%, #2e2030e0 100%);
+        background:
+          radial-gradient(circle at 22% 18%, rgba(255,241,200,0.18), transparent 30%),
+          radial-gradient(circle at 78% 72%, rgba(122,101,184,0.30), transparent 32%),
+          linear-gradient(145deg, rgba(21,27,31,0.92), rgba(25,36,36,0.82) 55%, rgba(46,32,48,0.82));
         border-radius: 8px;
         display: grid;
         place-items: center;
-        min-height: 430px;
+        min-height: 440px;
         position: relative;
         overflow: hidden;
-        box-shadow: inset 0 0 0 1px #fff1c829, 0 28px 86px #0000007a, 0 0 58px #d9b56f1a;
+        box-shadow: inset 0 0 0 1px rgba(255,241,200,0.15), 0 28px 86px rgba(0,0,0,0.48), 0 0 58px rgba(226,188,114,0.13);
+        animation: panelFloat 7s ease-in-out infinite;
       }
 
       .hero-visual::before {
         content: "";
-        border: 1px solid #fff1c82e;
+        border: 1px solid rgba(255,241,200,0.18);
         border-radius: 8px;
         position: absolute;
         inset: 28px;
-        box-shadow: inset 0 0 42px #fff1c80f;
+        box-shadow: inset 0 0 42px rgba(255,241,200,0.08);
+      }
+
+      .hero-visual::after {
+        content: "";
+        position: absolute;
+        width: 150%;
+        height: 150%;
+        background: conic-gradient(from 90deg, transparent, rgba(226,188,114,0.16), transparent, rgba(146,200,176,0.12), transparent);
+        animation: slowSpin 18s linear infinite;
       }
 
       .orb {
-        width: min(64%, 300px);
+        width: min(64%, 305px);
         aspect-ratio: 1;
         border-radius: 999px;
-        background: radial-gradient(circle at 34% 28%, #fff1c8, #d9b56f 24%, #7c5aa5 56%, #0f1416 74%);
-        box-shadow: 0 0 60px #d9b56f52, inset -24px -34px 70px #00000080;
+        background: radial-gradient(circle at 34% 28%, #fff1c8, var(--gold) 24%, var(--violet) 56%, #0f1416 74%);
+        box-shadow: 0 0 70px rgba(226,188,114,0.35), inset -24px -34px 70px rgba(0,0,0,0.52);
+        position: relative;
+        z-index: 1;
+        animation: orbPulse 4.6s ease-in-out infinite;
       }
+
+      .orb::before, .orb::after {
+        content: "";
+        position: absolute;
+        border-radius: inherit;
+        inset: -16px;
+        border: 1px solid rgba(226,188,114,0.28);
+        animation: ringBreath 3.8s ease-in-out infinite;
+      }
+      .orb::after { inset: -38px; border-color: rgba(146,200,176,0.2); animation-delay: 0.8s; }
 
       .floating-note {
         text-align: left;
         backdrop-filter: blur(14px);
-        background: #0d1112d1;
-        border: 1px solid #d9b56f47;
+        background: rgba(13,17,18,0.82);
+        border: 1px solid rgba(226,188,114,0.28);
         border-radius: 8px;
         width: 138px;
         padding: 16px;
         position: absolute;
         bottom: 24px;
         right: 24px;
-        box-shadow: 0 18px 46px #0000004d, 0 0 30px #d9b56f17;
+        z-index: 2;
+        box-shadow: 0 18px 46px rgba(0,0,0,0.32), 0 0 30px rgba(226,188,114,0.1);
+        animation: noteFloat 5s ease-in-out infinite;
       }
 
-      .floating-note span { color: #c98f73; font-size: 0.78rem; font-weight: 800; display: block; }
+      .floating-note span { color: var(--copper); font-size: 0.78rem; font-weight: 850; display: block; }
       .floating-note strong { color: #fff9ed; margin-top: 4px; font-size: 1rem; line-height: 1.25; display: block; }
 
       .content-grid {
@@ -167,20 +243,30 @@
 
       .profile-card, .skills-panel, .learning-section, .works-section, .todo-section {
         backdrop-filter: blur(16px);
-        background: linear-gradient(#1a1f1fdb, #0c1012e6);
-        border: 1px solid #efdbb229;
+        background: var(--panel);
+        border: 1px solid var(--line);
         border-radius: 8px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 22px 70px #00000057, inset 0 1px #ffffff0f;
+        box-shadow: 0 22px 70px rgba(0,0,0,0.36), inset 0 1px rgba(255,255,255,0.06);
         padding: 28px;
+        transform: translateY(28px);
+        opacity: 0;
+        transition: opacity 0.75s ease, transform 0.75s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      }
+
+      .is-visible { opacity: 1; transform: translateY(0); }
+
+      .profile-card:hover, .skills-panel:hover, .learning-section:hover, .works-section:hover, .todo-section:hover, .learning-card:hover, .work-card:hover {
+        border-color: rgba(226,188,114,0.38);
+        box-shadow: 0 28px 86px rgba(0,0,0,0.44), 0 0 46px rgba(226,188,114,0.10), inset 0 1px rgba(255,255,255,0.08);
       }
 
       .learning-section, .works-section, .todo-section { margin-top: 20px; padding: 30px; }
       .profile-card::before, .skills-panel::before, .learning-section::before, .works-section::before, .todo-section::before {
         content: "";
         pointer-events: none;
-        background: linear-gradient(90deg, #fff1c857, #0000 38%, #6554973d);
+        background: linear-gradient(90deg, rgba(255,241,200,0.34), transparent 38%, rgba(122,101,184,0.24));
         height: 1px;
         position: absolute;
         inset: 0;
@@ -189,46 +275,56 @@
       .card-header, .section-heading, .work-card-top { display: flex; justify-content: space-between; gap: 18px; }
       .card-header { align-items: flex-start; }
       .section-heading { align-items: end; margin-bottom: 22px; }
-      h2 { color: #fff9ed; margin: 0; font-size: 1.65rem; font-weight: 850; line-height: 1.2; }
+      h2 { color: #fff9ed; margin: 0; font-size: 1.65rem; font-weight: 880; line-height: 1.2; }
       h3 { color: #fff9ed; }
-      .card-header p, .bio, .work-card p, .learning-card ul { color: #c8c4ba; line-height: 1.75; }
+      .card-header p, .bio, .work-card p, .learning-card ul { color: var(--muted); line-height: 1.75; }
       .bio { margin: 24px 0 0; }
-      .status-dot { background: #d9b56f; border-radius: 999px; flex: none; width: 13px; height: 13px; margin-top: 8px; box-shadow: 0 0 0 7px #d9b56f1f, 0 0 22px #d9b56f9e; }
+      .status-dot { background: var(--gold); border-radius: 999px; flex: none; width: 13px; height: 13px; margin-top: 8px; box-shadow: 0 0 0 7px rgba(226,188,114,0.12), 0 0 22px rgba(226,188,114,0.62); animation: statusBeat 2.4s ease-in-out infinite; }
       .email-link { color: #e3bf78; margin-top: 22px; font-weight: 800; text-decoration: none; display: inline-flex; }
-      .email-link:hover { color: #c98f73; }
+      .email-link:hover { color: var(--copper); }
       .skill-list { margin-top: 24px; }
-      .skill-list span, .project-strip span, .work-tags span { border-radius: 999px; align-items: center; min-height: 34px; padding: 0 12px; font-size: 0.86rem; font-weight: 750; display: inline-flex; }
-      .skill-list span, .project-strip span { color: #f3ead7; background: #d9b56f14; border: 1px solid #d9b56f2e; }
+      .skill-list span, .project-strip span, .work-tags span { border-radius: 999px; align-items: center; min-height: 34px; padding: 0 12px; font-size: 0.86rem; font-weight: 760; display: inline-flex; transition: transform 0.22s ease, border-color 0.22s ease; }
+      .skill-list span:hover, .project-strip span:hover, .work-tags span:hover { transform: translateY(-2px); }
+      .skill-list span, .project-strip span { color: #f3ead7; background: rgba(226,188,114,0.09); border: 1px solid rgba(226,188,114,0.18); }
       .learning-grid, .works-grid { display: grid; gap: 14px; }
       .learning-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .works-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .learning-card, .work-card, .todo-item, .empty-state { background: linear-gradient(#1e2726d6, #0f1416f0); border: 1px solid #efdbb224; border-radius: 8px; position: relative; overflow: hidden; }
-      .learning-card, .work-card { text-align: left; padding: 22px; box-shadow: inset 0 0 24px #d9b56f09; }
+      .learning-card, .work-card, .todo-item, .empty-state { background: linear-gradient(rgba(30,39,38,0.82), rgba(15,20,22,0.90)); border: 1px solid rgba(239,219,178,0.14); border-radius: 8px; position: relative; overflow: hidden; }
+      .learning-card, .work-card { text-align: left; padding: 22px; box-shadow: inset 0 0 24px rgba(226,188,114,0.04); transition: transform 0.26s ease, box-shadow 0.26s ease, border-color 0.26s ease; }
+      .learning-card:hover, .work-card:hover { transform: translateY(-6px); }
       .learning-card { min-height: 270px; }
       .work-card { display: flex; flex-direction: column; min-height: 220px; }
-      .track-number, .work-card-top span { color: #16110a; background: linear-gradient(135deg, #fff1c8, #d9b56f 52%, #8fb7a8); border-radius: 8px; align-items: center; font-size: 0.82rem; font-weight: 850; display: inline-flex; }
+      .track-number, .work-card-top span { color: #16110a; background: linear-gradient(135deg, #fff1c8, var(--gold) 52%, var(--sage)); border-radius: 8px; align-items: center; font-size: 0.82rem; font-weight: 880; display: inline-flex; }
       .track-number { justify-content: center; width: 38px; height: 38px; }
       .work-card-top span { min-height: 30px; padding: 0 10px; }
       .learning-card ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
       .learning-card li { padding-left: 16px; position: relative; }
-      .learning-card li::before { content: ""; background: #d9b56f; border-radius: 999px; width: 6px; height: 6px; position: absolute; top: 0.72em; left: 0; box-shadow: 0 0 12px #d9b56f85; }
-      .project-strip { border-top: 1px solid #efdbb221; margin-top: 18px; padding-top: 18px; }
+      .learning-card li::before { content: ""; background: var(--gold); border-radius: 999px; width: 6px; height: 6px; position: absolute; top: 0.72em; left: 0; box-shadow: 0 0 12px rgba(226,188,114,0.52); }
+      .project-strip { border-top: 1px solid rgba(239,219,178,0.13); margin-top: 18px; padding-top: 18px; }
       .work-tags { margin-top: auto; padding-top: 18px; gap: 8px; }
-      .work-tags span { color: #eee4d1; background: #65549724; border: 1px solid #9282bf42; }
+      .work-tags span { color: #eee4d1; background: rgba(122,101,184,0.15); border: 1px solid rgba(146,130,191,0.26); }
       .input-group { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
-      .input-group input { color: #fff9ed; min-width: 0; min-height: 48px; background: #0a0d0ec2; border: 1px solid #d9b56f33; border-radius: 8px; outline: none; padding: 0 16px; }
+      .input-group input { color: #fff9ed; min-width: 0; min-height: 48px; background: rgba(10,13,14,0.72); border: 1px solid rgba(226,188,114,0.2); border-radius: 8px; outline: none; padding: 0 16px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
       .input-group input::placeholder { color: #8e8d86; }
-      .input-group input:focus { border-color: #d9b56f; box-shadow: 0 0 0 4px #d9b56f1f, 0 0 30px #d9b56f1f; }
-      .input-group button { color: #16110a; background: linear-gradient(135deg, #fff1c8, #d9b56f 50%, #8fb7a8); padding: 0 24px; }
+      .input-group input:focus { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(226,188,114,0.12), 0 0 30px rgba(226,188,114,0.12); }
+      .input-group button { color: #16110a; background: linear-gradient(135deg, #fff1c8, var(--gold) 50%, var(--sage)); padding: 0 24px; }
       .todo-list { display: grid; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
-      .todo-item, .empty-state { color: #f3ead7; background: #121718c7; justify-content: space-between; align-items: center; gap: 12px; min-height: 58px; padding: 10px 12px 10px 16px; display: flex; }
+      .todo-item, .empty-state { color: #f3ead7; background: rgba(18,23,24,0.78); justify-content: space-between; align-items: center; gap: 12px; min-height: 58px; padding: 10px 12px 10px 16px; display: flex; animation: todoIn 0.28s ease both; }
       .todo-item label { text-align: left; align-items: center; gap: 12px; min-width: 0; display: flex; }
-      .todo-item input { accent-color: #d9b56f; flex: none; width: 18px; height: 18px; }
+      .todo-item input { accent-color: var(--gold); flex: none; width: 18px; height: 18px; }
       .todo-item span { overflow-wrap: anywhere; }
       .todo-item.is-complete span { color: #858982; text-decoration: line-through; }
-      .del-btn { color: #f3c7b6; background: #b9674e1f; border: 1px solid #c98f733d; flex: none; min-height: 38px; padding: 0 14px; }
-      .del-btn:hover { color: #16110a; background: #c98f73; box-shadow: 0 12px 28px #c98f732e; }
+      .del-btn { color: #f3c7b6; background: rgba(185,103,78,0.12); border: 1px solid rgba(201,143,115,0.24); flex: none; min-height: 38px; padding: 0 14px; }
+      .del-btn:hover { color: #16110a; background: var(--copper); box-shadow: 0 12px 28px rgba(201,143,115,0.18); }
       .empty-state { color: #a8aaa3; justify-content: center; }
+
+      @keyframes panelFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+      @keyframes slowSpin { to { transform: rotate(360deg); } }
+      @keyframes orbPulse { 0%, 100% { transform: scale(1) rotate(0deg); filter: saturate(1); } 50% { transform: scale(1.045) rotate(8deg); filter: saturate(1.18); } }
+      @keyframes ringBreath { 0%, 100% { transform: scale(0.92); opacity: 0.25; } 50% { transform: scale(1.05); opacity: 0.75; } }
+      @keyframes noteFloat { 0%, 100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(-8px,-10px,0); } }
+      @keyframes statusBeat { 0%, 100% { box-shadow: 0 0 0 7px rgba(226,188,114,0.12), 0 0 22px rgba(226,188,114,0.62); } 50% { box-shadow: 0 0 0 11px rgba(226,188,114,0.06), 0 0 36px rgba(226,188,114,0.92); } }
+      @keyframes todoIn { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
       @media (width <= 860px) {
         .site-shell { width: min(100% - 24px, 640px); padding-top: 24px; }
@@ -246,12 +342,19 @@
         .hero-visual { min-height: 280px; }
         .floating-note { bottom: 14px; right: 14px; }
       }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+        #starfield { display: none; }
+        .profile-card, .skills-panel, .learning-section, .works-section, .todo-section { opacity: 1; transform: none; }
+      }
     </style>
   </head>
   <body>
+    <canvas id="starfield" aria-hidden="true"></canvas>
     <main class="site-shell">
       <section class="hero-section" aria-labelledby="hero-title">
-        <div>
+        <div class="hero-copy reveal">
           <p class="eyebrow">STUST JavaScript Final Project</p>
           <h1 id="hero-title">南臺科技大學 JavaScript 期末專題</h1>
           <p class="hero-text">這裡整理了個人名片、學習方向與待辦清單練習，讓 React 的 state、props、event handler 不只停在範例，也變成可以展示的頁面。</p>
@@ -267,29 +370,21 @@
       </section>
 
       <section class="content-grid" aria-label="個人資訊與技能">
-        <article class="profile-card" aria-label="個人名片">
+        <article class="profile-card reveal" aria-label="個人名片">
           <div class="profile-topline">About Me</div>
-          <div class="card-header">
-            <div>
-              <h2>馮顥元</h2>
-              <p>南臺科技大學資工系</p>
-            </div>
-            <span class="status-dot" aria-label="目前學習中"></span>
-          </div>
+          <div class="card-header"><div><h2>馮顥元</h2><p>南臺科技大學資工系</p></div><span class="status-dot" aria-label="目前學習中"></span></div>
           <p class="bio">目前是一名資工系大學生，平時除了學習程式設計與前端開發，也熱愛運動健身。因為重視訓練與生活習慣，也持續了解營養學相關知識，希望能在學習、健康與自我管理之間找到更好的平衡。</p>
           <a class="email-link" href="mailto:4B1G0105@stust.edu.tw">4B1G0105@stust.edu.tw</a>
         </article>
 
-        <article class="skills-panel">
+        <article class="skills-panel reveal">
           <p class="section-label">Focus</p>
           <h2>目前學習重點</h2>
-          <div class="skill-list">
-            <span>學習 AI 工具應用</span><span>AI 輔助程式設計</span><span>Prompt 練習</span><span>前端整合 AI</span>
-          </div>
+          <div class="skill-list"><span>學習 AI 工具應用</span><span>AI 輔助程式設計</span><span>Prompt 練習</span><span>前端整合 AI</span></div>
         </article>
       </section>
 
-      <section class="learning-section" id="learning" aria-labelledby="learning-title">
+      <section class="learning-section reveal" id="learning" aria-labelledby="learning-title">
         <div class="section-heading"><div><p class="section-label">Learning Focus</p><h2 id="learning-title">本學期上課內容</h2></div></div>
         <div class="learning-grid">
           <article class="learning-card"><span class="track-number">01</span><h3>HTML 與 CSS 基礎</h3><ul><li>Page Title 與 Id</li><li>CSS Box Model</li><li>Inline-block</li><li>W3Schools Quiz</li></ul></article>
@@ -300,7 +395,7 @@
         <div class="project-strip" aria-label="實作作品"><span>製作個人名片展示網頁</span><span>製作待辦事項網頁</span><span>開發天氣查詢應用或電影搜尋引擎</span></div>
       </section>
 
-      <section class="works-section" aria-labelledby="works-title">
+      <section class="works-section reveal" aria-labelledby="works-title">
         <div class="section-heading"><div><p class="section-label">Portfolio</p><h2 id="works-title">已開發作品</h2></div></div>
         <div class="works-grid">
           <article class="work-card"><div class="work-card-top"><span>Website</span></div><h3>個人名片網站</h3><p>整理個人介紹、學習重點與課堂實作內容，做成可以展示的個人網站。</p><div class="work-tags"><span>React</span><span>Vite</span><span>CSS</span></div></article>
@@ -309,43 +404,104 @@
         </div>
       </section>
 
-      <section class="todo-section" id="practice" aria-labelledby="todo-title">
+      <section class="todo-section reveal" id="practice" aria-labelledby="todo-title">
         <div class="section-heading"><div><p class="section-label">Practice</p><h2 id="todo-title">待辦事項</h2></div></div>
-        <div class="input-group">
-          <input id="todo-input" type="text" placeholder="輸入新的學習任務..." />
-          <button id="add-todo" type="button">新增</button>
-        </div>
+        <div class="input-group"><input id="todo-input" type="text" placeholder="輸入新的學習任務..." /><button id="add-todo" type="button">新增</button></div>
         <ul class="todo-list" id="todo-list"></ul>
       </section>
     </main>
 
     <script>
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const canvas = document.querySelector('#starfield');
+      const ctx = canvas.getContext('2d');
+      const pointer = { x: window.innerWidth / 2, y: window.innerHeight / 3 };
+      let particles = [];
+
+      function resizeCanvas() {
+        const scale = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.floor(window.innerWidth * scale);
+        canvas.height = Math.floor(window.innerHeight * scale);
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        ctx.setTransform(scale, 0, 0, scale, 0, 0);
+        const count = Math.min(95, Math.max(42, Math.floor(window.innerWidth / 14)));
+        particles = Array.from({ length: count }, () => ({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          r: Math.random() * 1.9 + 0.55,
+          vx: (Math.random() - 0.5) * 0.32,
+          vy: Math.random() * 0.28 + 0.06,
+          hue: Math.random() > 0.55 ? '226,188,114' : '146,200,176',
+        }));
+      }
+
+      function drawParticles() {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        particles.forEach((p, index) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          const dx = pointer.x - p.x;
+          const dy = pointer.y - p.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 150) {
+            p.x -= dx * 0.002;
+            p.y -= dy * 0.002;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(pointer.x, pointer.y);
+            ctx.strokeStyle = `rgba(${p.hue}, ${0.12 * (1 - dist / 150)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+          if (p.y > window.innerHeight + 12) p.y = -12;
+          if (p.x < -12) p.x = window.innerWidth + 12;
+          if (p.x > window.innerWidth + 12) p.x = -12;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${p.hue}, ${0.26 + (index % 3) * 0.08})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(drawParticles);
+      }
+
+      if (!prefersReducedMotion) {
+        resizeCanvas();
+        drawParticles();
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('pointermove', (event) => {
+          pointer.x = event.clientX;
+          pointer.y = event.clientY;
+          document.documentElement.style.setProperty('--glow-x', `${event.clientX}px`);
+          document.documentElement.style.setProperty('--glow-y', `${event.clientY}px`);
+        });
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.16 });
+      document.querySelectorAll('.reveal, .profile-card, .skills-panel, .learning-section, .works-section, .todo-section').forEach((item, index) => {
+        item.style.transitionDelay = `${Math.min(index * 70, 360)}ms`;
+        observer.observe(item);
+      });
+
       const todoStorageKey = 'personal-site-todos';
       const defaultTodos = [
         { id: 1, text: '整理 React 元件拆分筆記', completed: false },
         { id: 2, text: '練習 useState 與表單輸入', completed: false },
         { id: 3, text: '嘗試串接公開 API 並處理 Loading/Error', completed: false },
       ];
-
       const input = document.querySelector('#todo-input');
       const addButton = document.querySelector('#add-todo');
       const list = document.querySelector('#todo-list');
-
-      function loadTodos() {
-        try {
-          const saved = localStorage.getItem(todoStorageKey);
-          return saved ? JSON.parse(saved) : defaultTodos;
-        } catch {
-          return defaultTodos;
-        }
-      }
-
+      function loadTodos() { try { const saved = localStorage.getItem(todoStorageKey); return saved ? JSON.parse(saved) : defaultTodos; } catch { return defaultTodos; } }
       let todos = loadTodos();
-
-      function saveTodos() {
-        try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch {}
-      }
-
+      function saveTodos() { try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch {} }
       function renderTodos() {
         list.innerHTML = '';
         if (todos.length === 0) {
@@ -355,11 +511,9 @@
           list.appendChild(empty);
           return;
         }
-
         todos.forEach((todo) => {
           const item = document.createElement('li');
           item.className = `todo-item${todo.completed ? ' is-complete' : ''}`;
-
           const label = document.createElement('label');
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
@@ -369,26 +523,26 @@
             saveTodos();
             renderTodos();
           });
-
           const text = document.createElement('span');
           text.textContent = todo.text;
           label.append(checkbox, text);
-
           const deleteButton = document.createElement('button');
           deleteButton.className = 'del-btn';
           deleteButton.type = 'button';
           deleteButton.textContent = '刪除';
           deleteButton.addEventListener('click', () => {
-            todos = todos.filter((entry) => entry.id !== todo.id);
-            saveTodos();
-            renderTodos();
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(14px) scale(0.98)';
+            setTimeout(() => {
+              todos = todos.filter((entry) => entry.id !== todo.id);
+              saveTodos();
+              renderTodos();
+            }, 160);
           });
-
           item.append(label, deleteButton);
           list.appendChild(item);
         });
       }
-
       function addTodo() {
         const text = input.value.trim();
         if (!text) return;
@@ -397,12 +551,8 @@
         saveTodos();
         renderTodos();
       }
-
       addButton.addEventListener('click', addTodo);
-      input.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') addTodo();
-      });
-
+      input.addEventListener('keydown', (event) => { if (event.key === 'Enter') addTodo(); });
       renderTodos();
     </script>
   </body>
