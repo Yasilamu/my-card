@@ -40,20 +40,16 @@ const developedWorks = [
   {
     title: '個人名片網站',
     type: 'Website',
+    url: 'https://yasilamu.github.io/my-card/',
     description: '整理個人介紹、學習重點與課堂實作內容，做成可以展示的個人網站。',
     tags: ['React', 'Vite', 'CSS'],
   },
   {
-    title: '待辦事項網頁',
+    title: 'FitPlan 健身飲食紀錄',
     type: 'Web App',
-    description: '使用 useState 製作新增、完成與刪除待辦事項的互動功能。',
-    tags: ['React', 'State', 'Event'],
-  },
-  {
-    title: '作品預留位置',
-    type: 'App',
-    description: '之後可以放天氣查詢、電影搜尋、健身紀錄或其他完成的網站與 App。',
-    tags: ['Project', 'Demo', 'Portfolio'],
+    url: 'https://yasilamu.github.io/fitness-app/',
+    description: '可輸入身體資料、飲食目標與每日紀錄，協助安排自主健身飲食計畫。',
+    tags: ['GitHub Pages', 'PWA', 'Fitness'],
   },
 ]
 
@@ -140,18 +136,25 @@ function DevelopedWorks() {
 
       <div className="works-grid">
         {developedWorks.map((work) => (
-          <article className="work-card" key={work.title}>
+          <a
+            className="work-card"
+            href={work.url}
+            key={work.title}
+            target="_blank"
+            rel="noreferrer"
+          >
             <div className="work-card-top">
               <span>{work.type}</span>
             </div>
             <h3>{work.title}</h3>
             <p>{work.description}</p>
+            <strong className="work-link-text">查看作品</strong>
             <div className="work-tags">
               {work.tags.map((tag) => (
                 <span key={tag}>{tag}</span>
               ))}
             </div>
-          </article>
+          </a>
         ))}
       </div>
     </section>
