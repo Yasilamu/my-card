@@ -412,7 +412,7 @@
       <section class="todo-section reveal" id="practice" aria-labelledby="todo-title">
         <div class="section-heading"><div><p class="section-label">Practice</p><h2 id="todo-title">待辦事項</h2></div></div>
         <div class="input-group"><input id="todo-input" type="text" placeholder="輸入新的學習任務..." /><button id="add-todo" type="button">新增</button></div>
-        <div class="todo-actions"><button id="copy-todos" type="button">複製清單連結</button><span id="copy-status" role="status"></span></div>
+        <div class="todo-actions"><button id="copy-todos" type="button">複製清單連結</button><span id="copy-status" role="status"></span><span id="sync-status" role="status"></span></div>
         <ul class="todo-list" id="todo-list"></ul>
       </section>
     </main>
@@ -498,6 +498,12 @@
 
       const todoStorageKey = 'personal-site-todos';
       const todoUrlParam = 'todos';
+      const supabaseConfig = {
+        url: '',
+        anonKey: '',
+        table: 'site_todo_lists',
+        listKey: 'main',
+      };
       const defaultTodos = [
         { id: 1, text: '整理 React 元件拆分筆記', completed: false },
         { id: 2, text: '練習 useState 與表單輸入', completed: false },
@@ -507,7 +513,9 @@
       const addButton = document.querySelector('#add-todo');
       const copyButton = document.querySelector('#copy-todos');
       const copyStatus = document.querySelector('#copy-status');
+      const syncStatus = document.querySelector('#sync-status');
       const list = document.querySelector('#todo-list');
+      let cloudSyncTimer = null;
       function normalizeTodos(value) {
         if (!Array.isArray(value)) return null;
         return value
@@ -517,6 +525,56 @@
             text: item.text.trim(),
             completed: Boolean(item.completed),
           }));
+      }
+      function getSupabaseConfig() {
+        const url = supabaseConfig.url.trim();
+        const anonKey = supabaseConfig.anonKey.trim();
+        if (!url || !anonKey || url.includes('YOUR_') || anonKey.includes('YOUR_')) return null;
+        return {
+          url: url.replace(/\/$/, ''),
+          anonKey,
+          table: supabaseConfig.table,
+          listKey: supabaseConfig.listKey,
+        };
+      }
+      function supabaseHeaders(config, extra = {}) {
+        return {
+          apikey: config.anonKey,
+          Authorization: `Bearer ${config.anonKey}`,
+          ...extra,
+        };
+      }
+      function showSyncStatus(message) {
+        syncStatus.textContent = message;
+      }
+      async function fetchCloudTodos() {
+        const config = getSupabaseConfig();
+        if (!config) return null;
+        const endpoint = `${config.url}/rest/v1/${config.table}?list_key=eq.${encodeURIComponent(config.listKey)}&select=todos&limit=1`;
+        const response = await fetch(endpoint, { headers: supabaseHeaders(config) });
+        if (!response.ok) throw new Error(`Supabase select failed: ${response.status}`);
+        const rows = await response.json();
+        if (!rows.length) return [];
+        return normalizeTodos(rows[0].todos) || [];
+      }
+      async function saveCloudTodos() {
+        const config = getSupabaseConfig();
+        if (!config) return false;
+        const endpoint = `${config.url}/rest/v1/${config.table}?on_conflict=list_key`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: supabaseHeaders(config, {
+            'Content-Type': 'application/json',
+            Prefer: 'resolution=merge-duplicates,return=minimal',
+          }),
+          body: JSON.stringify({
+            list_key: config.listKey,
+            todos,
+            updated_at: new Date().toISOString(),
+          }),
+        });
+        if (!response.ok) throw new Error(`Supabase upsert failed: ${response.status}`);
+        return true;
       }
       function loadTodosFromUrl() {
         try {
@@ -540,11 +598,56 @@
           window.history.replaceState(null, '', url);
         } catch {}
       }
-      function saveTodos() { try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch {} syncTodosToUrl(); }
+      function saveTodos() {
+        try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch {}
+        syncTodosToUrl();
+        saveCloudTodos()
+          .then((synced) => showSyncStatus(synced ? '雲端已同步' : '本機保存'))
+          .catch(() => showSyncStatus('雲端同步失敗，已本機保存'));
+      }
       function showCopyStatus(message) {
         copyStatus.textContent = message;
         window.clearTimeout(showCopyStatus.timer);
         showCopyStatus.timer = window.setTimeout(() => { copyStatus.textContent = ''; }, 1800);
+      }
+      async function loadCloudOnStart() {
+        const config = getSupabaseConfig();
+        if (!config) {
+          showSyncStatus('本機保存');
+          return;
+        }
+        try {
+          const cloudTodos = await fetchCloudTodos();
+          if (cloudTodos) {
+            todos = cloudTodos;
+            try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch {}
+            syncTodosToUrl();
+            renderTodos();
+          } else {
+            await saveCloudTodos();
+          }
+          showSyncStatus('雲端同步中');
+        } catch {
+          showSyncStatus('雲端同步失敗，已本機保存');
+        }
+      }
+      function startCloudPolling() {
+        if (!getSupabaseConfig() || cloudSyncTimer) return;
+        cloudSyncTimer = window.setInterval(async () => {
+          try {
+            const cloudTodos = await fetchCloudTodos();
+            if (!cloudTodos) return;
+            if (JSON.stringify(cloudTodos) !== JSON.stringify(todos)) {
+              todos = cloudTodos;
+              try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch {}
+              syncTodosToUrl();
+              renderTodos();
+            }
+            showSyncStatus('雲端同步中');
+          } catch {
+            showSyncStatus('雲端同步失敗，已本機保存');
+          }
+        }, 12000);
       }
       function renderTodos() {
         list.innerHTML = '';
@@ -607,6 +710,8 @@
       });
       syncTodosToUrl();
       renderTodos();
+      loadCloudOnStart();
+      startCloudPolling();
     </script>
   </body>
 </html>
