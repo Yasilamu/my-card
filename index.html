@@ -116,7 +116,7 @@
 
       .hero-actions { margin-top: 32px; }
 
-      .primary-action, .secondary-action, .input-group button, .del-btn {
+      .primary-action, .secondary-action, .input-group button, .todo-actions button, .del-btn {
         cursor: pointer;
         border: 0;
         border-radius: 8px;
@@ -157,7 +157,7 @@
         box-shadow: inset 0 0 24px rgba(226,188,114,0.08);
       }
 
-      .primary-action:hover, .secondary-action:hover, .input-group button:hover, .del-btn:hover {
+      .primary-action:hover, .secondary-action:hover, .input-group button:hover, .todo-actions button:hover, .del-btn:hover {
         transform: translateY(-3px);
       }
 
@@ -310,6 +310,9 @@
       .input-group input::placeholder { color: #8e8d86; }
       .input-group input:focus { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(226,188,114,0.12), 0 0 30px rgba(226,188,114,0.12); }
       .input-group button { color: #16110a; background: linear-gradient(135deg, #fff1c8, var(--gold) 50%, var(--sage)); padding: 0 24px; }
+      .todo-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+      .todo-actions button { color: #f5ead8; background: rgba(18,23,24,0.72); border: 1px solid rgba(226,188,114,0.33); min-height: 38px; padding: 0 14px; }
+      .todo-actions span { color: var(--sage); font-size: 0.9rem; font-weight: 800; }
       .todo-list { display: grid; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
       .todo-item, .empty-state { color: #f3ead7; background: rgba(18,23,24,0.78); justify-content: space-between; align-items: center; gap: 12px; min-height: 58px; padding: 10px 12px 10px 16px; display: flex; animation: todoIn 0.28s ease both; }
       .todo-item label { text-align: left; align-items: center; gap: 12px; min-width: 0; display: flex; }
@@ -339,7 +342,8 @@
       @media (width <= 560px) {
         .hero-actions, .section-heading, .todo-item { flex-direction: column; align-items: stretch; }
         .input-group { grid-template-columns: 1fr; }
-        .primary-action, .secondary-action, .input-group button { width: 100%; }
+        .primary-action, .secondary-action, .input-group button, .todo-actions button { width: 100%; }
+        .todo-actions { align-items: stretch; flex-direction: column; }
         .profile-card, .skills-panel, .learning-section, .works-section, .todo-section { padding: 22px; }
         .hero-visual { min-height: 280px; }
         .floating-note { bottom: 14px; right: 14px; }
@@ -408,6 +412,7 @@
       <section class="todo-section reveal" id="practice" aria-labelledby="todo-title">
         <div class="section-heading"><div><p class="section-label">Practice</p><h2 id="todo-title">待辦事項</h2></div></div>
         <div class="input-group"><input id="todo-input" type="text" placeholder="輸入新的學習任務..." /><button id="add-todo" type="button">新增</button></div>
+        <div class="todo-actions"><button id="copy-todos" type="button">複製清單連結</button><span id="copy-status" role="status"></span></div>
         <ul class="todo-list" id="todo-list"></ul>
       </section>
     </main>
@@ -492,6 +497,7 @@
       });
 
       const todoStorageKey = 'personal-site-todos';
+      const todoUrlParam = 'todos';
       const defaultTodos = [
         { id: 1, text: '整理 React 元件拆分筆記', completed: false },
         { id: 2, text: '練習 useState 與表單輸入', completed: false },
@@ -499,10 +505,47 @@
       ];
       const input = document.querySelector('#todo-input');
       const addButton = document.querySelector('#add-todo');
+      const copyButton = document.querySelector('#copy-todos');
+      const copyStatus = document.querySelector('#copy-status');
       const list = document.querySelector('#todo-list');
-      function loadTodos() { try { const saved = localStorage.getItem(todoStorageKey); return saved ? JSON.parse(saved) : defaultTodos; } catch { return defaultTodos; } }
+      function normalizeTodos(value) {
+        if (!Array.isArray(value)) return null;
+        return value
+          .filter((item) => item && typeof item.text === 'string' && item.text.trim() !== '')
+          .map((item, index) => ({
+            id: Number.isFinite(item.id) ? item.id : Date.now() + index,
+            text: item.text.trim(),
+            completed: Boolean(item.completed),
+          }));
+      }
+      function loadTodosFromUrl() {
+        try {
+          const sharedTodos = new URLSearchParams(window.location.search).get(todoUrlParam);
+          return sharedTodos ? normalizeTodos(JSON.parse(sharedTodos)) : null;
+        } catch { return null; }
+      }
+      function loadTodos() {
+        const urlTodos = loadTodosFromUrl();
+        if (urlTodos) return urlTodos;
+        try {
+          const saved = localStorage.getItem(todoStorageKey);
+          return saved ? (normalizeTodos(JSON.parse(saved)) || defaultTodos) : defaultTodos;
+        } catch { return defaultTodos; }
+      }
       let todos = loadTodos();
-      function saveTodos() { try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch {} }
+      function syncTodosToUrl() {
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set(todoUrlParam, JSON.stringify(todos));
+          window.history.replaceState(null, '', url);
+        } catch {}
+      }
+      function saveTodos() { try { localStorage.setItem(todoStorageKey, JSON.stringify(todos)); } catch {} syncTodosToUrl(); }
+      function showCopyStatus(message) {
+        copyStatus.textContent = message;
+        window.clearTimeout(showCopyStatus.timer);
+        showCopyStatus.timer = window.setTimeout(() => { copyStatus.textContent = ''; }, 1800);
+      }
       function renderTodos() {
         list.innerHTML = '';
         if (todos.length === 0) {
@@ -554,6 +597,15 @@
       }
       addButton.addEventListener('click', addTodo);
       input.addEventListener('keydown', (event) => { if (event.key === 'Enter') addTodo(); });
+      copyButton.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          showCopyStatus('已複製');
+        } catch {
+          showCopyStatus('請複製網址列');
+        }
+      });
+      syncTodosToUrl();
       renderTodos();
     </script>
   </body>

@@ -76,6 +76,7 @@
 .primary-action,
 .secondary-action,
 .input-group button,
+.todo-actions button,
 .del-btn {
   cursor: pointer;
   border: 0;
@@ -107,6 +108,7 @@
 .primary-action:hover,
 .secondary-action:hover,
 .input-group button:hover,
+.todo-actions button:hover,
 .del-btn:hover {
   transform: translateY(-2px);
 }
@@ -494,6 +496,27 @@
   padding: 0 24px;
 }
 
+.todo-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.todo-actions button {
+  color: #f5ead8;
+  background: #121718b8;
+  border: 1px solid #d9b56f52;
+  min-height: 38px;
+  padding: 0 14px;
+}
+
+.todo-actions span {
+  color: #8fb7a8;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .todo-list {
   display: grid;
   gap: 10px;
@@ -600,8 +623,14 @@
 
   .primary-action,
   .secondary-action,
-  .input-group button {
+  .input-group button,
+  .todo-actions button {
     width: 100%;
+  }
+
+  .todo-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .profile-card,

@@ -54,6 +54,7 @@ const developedWorks = [
 ]
 
 const todoStorageKey = 'personal-site-todos'
+const todoUrlParam = 'todos'
 
 const defaultTodos = [
   { id: 1, text: '整理 React 元件拆分筆記', completed: false },
@@ -61,12 +62,56 @@ const defaultTodos = [
   { id: 3, text: '嘗試串接公開 API 並處理 Loading/Error', completed: false },
 ]
 
+function normalizeTodos(value) {
+  if (!Array.isArray(value)) return null
+
+  const todos = value
+    .filter((item) => item && typeof item.text === 'string' && item.text.trim() !== '')
+    .map((item, index) => ({
+      id: Number.isFinite(item.id) ? item.id : Date.now() + index,
+      text: item.text.trim(),
+      completed: Boolean(item.completed),
+    }))
+
+  return todos
+}
+
+function loadTodosFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const sharedTodos = params.get(todoUrlParam)
+
+    if (!sharedTodos) return null
+
+    return normalizeTodos(JSON.parse(sharedTodos))
+  } catch {
+    return null
+  }
+}
+
 function loadSavedTodos() {
+  const urlTodos = loadTodosFromUrl()
+
+  if (urlTodos) return urlTodos
+
   try {
     const savedTodos = window.localStorage.getItem(todoStorageKey)
-    return savedTodos ? JSON.parse(savedTodos) : defaultTodos
+
+    if (!savedTodos) return defaultTodos
+
+    return normalizeTodos(JSON.parse(savedTodos)) ?? defaultTodos
   } catch {
     return defaultTodos
+  }
+}
+
+function syncTodosToUrl(todos) {
+  try {
+    const url = new URL(window.location.href)
+    url.searchParams.set(todoUrlParam, JSON.stringify(todos))
+    window.history.replaceState(null, '', url)
+  } catch {
+    // The list is still saved locally when URL updates are unavailable.
   }
 }
 
@@ -164,6 +209,7 @@ function DevelopedWorks() {
 function App() {
   const [todoInput, setTodoInput] = useState('')
   const [todos, setTodos] = useState(loadSavedTodos)
+  const [copyStatus, setCopyStatus] = useState('')
 
   useEffect(() => {
     try {
@@ -172,8 +218,18 @@ function App() {
       // Keep the page usable even if the browser blocks local storage.
     }
 
+    syncTodosToUrl(todos)
+
     console.log(`目前共有 ${todos.length} 項任務`)
   }, [todos])
+
+  useEffect(() => {
+    if (!copyStatus) return undefined
+
+    const timer = window.setTimeout(() => setCopyStatus(''), 1800)
+
+    return () => window.clearTimeout(timer)
+  }, [copyStatus])
 
   const handleAddTodo = () => {
     if (todoInput.trim() === '') return
@@ -184,20 +240,29 @@ function App() {
       completed: false,
     }
 
-    setTodos([...todos, newTodo])
+    setTodos((currentTodos) => [...currentTodos, newTodo])
     setTodoInput('')
   }
 
   const handleToggle = (id) => {
     setTodos(
-      todos.map((item) =>
+      (currentTodos) => currentTodos.map((item) =>
         item.id === id ? { ...item, completed: !item.completed } : item,
       ),
     )
   }
 
   const handleDelete = (id) => {
-    setTodos(todos.filter((item) => item.id !== id))
+    setTodos((currentTodos) => currentTodos.filter((item) => item.id !== id))
+  }
+
+  const handleCopyTodoLink = async () => {
+    try {
+      await window.navigator.clipboard.writeText(window.location.href)
+      setCopyStatus('已複製')
+    } catch {
+      setCopyStatus('請複製網址列')
+    }
   }
 
   return (
@@ -269,6 +334,13 @@ function App() {
             placeholder="輸入新的學習任務..."
           />
           <button onClick={handleAddTodo}>新增</button>
+        </div>
+
+        <div className="todo-actions">
+          <button type="button" onClick={handleCopyTodoLink}>
+            複製清單連結
+          </button>
+          {copyStatus && <span role="status">{copyStatus}</span>}
         </div>
 
         <ul className="todo-list">
