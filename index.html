@@ -194,45 +194,102 @@
         animation: slowSpin 18s linear infinite;
       }
 
-      .orb {
-        width: min(64%, 305px);
+      .ghost-buddy {
+        width: min(72%, 330px);
         aspect-ratio: 1;
-        border-radius: 999px;
-        background: radial-gradient(circle at 34% 28%, #fff1c8, var(--gold) 24%, var(--violet) 56%, #0f1416 74%);
-        box-shadow: 0 0 70px rgba(226,188,114,0.35), inset -24px -34px 70px rgba(0,0,0,0.52);
         position: relative;
         z-index: 1;
-        animation: orbPulse 4.6s ease-in-out infinite;
+        display: grid;
+        place-items: center;
+        animation: ghostFloat 4.6s ease-in-out infinite;
       }
 
-      .orb::before, .orb::after {
+      .ghost-shadow {
+        width: 58%;
+        height: 34px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(0,0,0,0.52), transparent 72%);
+        position: absolute;
+        bottom: 8px;
+        filter: blur(4px);
+        animation: ghostShadow 4.6s ease-in-out infinite;
+      }
+
+      .ghost-body {
+        width: 78%;
+        aspect-ratio: 1.04;
+        border-radius: 48% 52% 42% 46% / 48% 50% 44% 46%;
+        background:
+          radial-gradient(circle at 34% 24%, rgba(255,255,255,0.18), transparent 18%),
+          radial-gradient(circle at 66% 75%, rgba(35,20,61,0.75), transparent 38%),
+          linear-gradient(145deg, #8c52d8 0%, #6d39b7 42%, #41245f 100%);
+        box-shadow: 0 0 76px rgba(140,82,216,0.4), inset -26px -36px 60px rgba(24,13,40,0.58), inset 16px 12px 34px rgba(255,255,255,0.09);
+        position: relative;
+        transform-origin: 50% 78%;
+        animation: ghostWiggle 3.8s ease-in-out infinite;
+      }
+
+      .ghost-body::before, .ghost-body::after {
         content: "";
         position: absolute;
-        border-radius: inherit;
-        inset: -16px;
-        border: 1px solid rgba(226,188,114,0.28);
-        animation: ringBreath 3.8s ease-in-out infinite;
+        width: 26%;
+        height: 22%;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.07);
+        filter: blur(2px);
       }
-      .orb::after { inset: -38px; border-color: rgba(146,200,176,0.2); animation-delay: 0.8s; }
+      .ghost-body::before { left: 16%; top: 24%; }
+      .ghost-body::after { right: 12%; bottom: 18%; background: rgba(14,7,27,0.28); }
 
-      .floating-note {
-        text-align: left;
-        backdrop-filter: blur(14px);
-        background: rgba(13,17,18,0.82);
-        border: 1px solid rgba(226,188,114,0.28);
-        border-radius: 8px;
-        width: 138px;
-        padding: 16px;
+      .ghost-ear {
         position: absolute;
-        bottom: 24px;
-        right: 24px;
-        z-index: 2;
-        box-shadow: 0 18px 46px rgba(0,0,0,0.32), 0 0 30px rgba(226,188,114,0.1);
-        animation: noteFloat 5s ease-in-out infinite;
+        top: -18%;
+        width: 38%;
+        height: 44%;
+        background: linear-gradient(145deg, #8c52d8, #4a2871);
+        clip-path: polygon(50% 0, 0 100%, 100% 100%);
+        z-index: -1;
+      }
+      .ghost-ear-left { left: 1%; transform: rotate(-27deg); }
+      .ghost-ear-right { right: 1%; transform: rotate(27deg); }
+
+      .ghost-eye {
+        position: absolute;
+        top: 33%;
+        width: 27%;
+        height: 13%;
+        background: #ff5252;
+        clip-path: polygon(0 18%, 100% 0, 82% 100%, 12% 76%);
+        box-shadow: 0 0 18px rgba(255,82,82,0.48);
+        animation: ghostBlink 5.4s ease-in-out infinite;
+      }
+      .ghost-eye-left { left: 18%; transform: rotate(9deg); }
+      .ghost-eye-right { right: 18%; transform: scaleX(-1) rotate(9deg); }
+
+      .ghost-smile {
+        position: absolute;
+        left: 50%;
+        top: 51%;
+        width: 50%;
+        height: 27%;
+        transform: translateX(-50%);
+        border-radius: 0 0 999px 999px;
+        background: #fff8fb;
+        box-shadow: inset 0 -18px 0 rgba(57,28,82,0.16);
+        clip-path: polygon(0 0, 13% 88%, 24% 22%, 36% 96%, 50% 18%, 64% 96%, 76% 22%, 87% 88%, 100% 0, 82% 100%, 18% 100%);
       }
 
-      .floating-note span { color: var(--copper); font-size: 0.78rem; font-weight: 850; display: block; }
-      .floating-note strong { color: #fff9ed; margin-top: 4px; font-size: 1rem; line-height: 1.25; display: block; }
+      .ghost-spike {
+        position: absolute;
+        bottom: -9%;
+        width: 22%;
+        height: 25%;
+        background: linear-gradient(160deg, #563082, #2a173f);
+        clip-path: polygon(50% 100%, 0 0, 100% 0);
+      }
+      .ghost-spike-one { left: 18%; transform: rotate(7deg); }
+      .ghost-spike-two { left: 39%; height: 31%; }
+      .ghost-spike-three { right: 18%; transform: rotate(-7deg); }
 
       .content-grid {
         display: grid;
@@ -325,9 +382,10 @@
 
       @keyframes panelFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
       @keyframes slowSpin { to { transform: rotate(360deg); } }
-      @keyframes orbPulse { 0%, 100% { transform: scale(1) rotate(0deg); filter: saturate(1); } 50% { transform: scale(1.045) rotate(8deg); filter: saturate(1.18); } }
-      @keyframes ringBreath { 0%, 100% { transform: scale(0.92); opacity: 0.25; } 50% { transform: scale(1.05); opacity: 0.75; } }
-      @keyframes noteFloat { 0%, 100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(-8px,-10px,0); } }
+      @keyframes ghostFloat { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -18px, 0); } }
+      @keyframes ghostShadow { 0%, 100% { transform: scaleX(1); opacity: 0.5; } 50% { transform: scaleX(0.76); opacity: 0.28; } }
+      @keyframes ghostWiggle { 0%, 100% { transform: rotate(-2deg); filter: saturate(1); } 50% { transform: rotate(2deg) scale(1.025); filter: saturate(1.15); } }
+      @keyframes ghostBlink { 0%, 46%, 51%, 100% { transform-origin: center; scale: 1 1; } 48%, 49% { scale: 1 0.16; } }
       @keyframes statusBeat { 0%, 100% { box-shadow: 0 0 0 7px rgba(226,188,114,0.12), 0 0 22px rgba(226,188,114,0.62); } 50% { box-shadow: 0 0 0 11px rgba(226,188,114,0.06), 0 0 36px rgba(226,188,114,0.92); } }
       @keyframes todoIn { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
@@ -346,7 +404,7 @@
         .todo-actions { align-items: stretch; flex-direction: column; }
         .profile-card, .skills-panel, .learning-section, .works-section, .todo-section { padding: 22px; }
         .hero-visual { min-height: 280px; }
-        .floating-note { bottom: 14px; right: 14px; }
+        .ghost-buddy { width: min(82%, 286px); }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -361,17 +419,28 @@
     <main class="site-shell">
       <section class="hero-section" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
-          <p class="eyebrow">STUST JavaScript Final Project</p>
-          <h1 id="hero-title">南臺科技大學 JavaScript 期末專題</h1>
-          <p class="hero-text">這裡整理了個人名片、學習方向與待辦清單練習，讓 React 的 state、props、event handler 不只停在範例，也變成可以展示的頁面。</p>
+          <p class="eyebrow">Portfolio Hub</p>
+          <h1 id="hero-title">我的學習與作品集</h1>
+          <p class="hero-text">這裡整理了個人介紹、課堂學習、作品展示與雲端同步待辦，讓學習紀錄和實作成果可以集中展示。</p>
           <div class="hero-actions" aria-label="快速連結">
             <a href="mailto:4B1G0105@stust.edu.tw" class="primary-action">聯絡我</a>
             <a href="#learning" class="secondary-action">查看重點</a>
           </div>
         </div>
         <div class="hero-visual" aria-hidden="true">
-          <div class="orb"></div>
-          <div class="floating-note"><span>React</span><strong>Hooks + UI</strong></div>
+          <div class="ghost-buddy">
+            <div class="ghost-shadow"></div>
+            <div class="ghost-body">
+              <span class="ghost-ear ghost-ear-left"></span>
+              <span class="ghost-ear ghost-ear-right"></span>
+              <span class="ghost-eye ghost-eye-left"></span>
+              <span class="ghost-eye ghost-eye-right"></span>
+              <span class="ghost-smile"></span>
+              <span class="ghost-spike ghost-spike-one"></span>
+              <span class="ghost-spike ghost-spike-two"></span>
+              <span class="ghost-spike ghost-spike-three"></span>
+            </div>
+          </div>
         </div>
       </section>
 
