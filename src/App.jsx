@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import './hero-orb.css'
 
 const profile = {
   name: '馮顥元',
@@ -55,6 +54,12 @@ const developedWorks = [
 
 const todoStorageKey = 'personal-site-todos'
 const todoUrlParam = 'todos'
+const supabaseConfig = {
+  url: 'https://sxdhrwahcsbojdotckuv.supabase.co',
+  anonKey: 'sb_publishable_1PnujqhJpuzT7bbltrPK9A_nyXnLgYb',
+  table: 'site_todo_lists',
+  listKey: 'main',
+}
 
 const defaultTodos = [
   { id: 1, text: '整理 React 元件拆分筆記', completed: false },
@@ -113,6 +118,71 @@ function syncTodosToUrl(todos) {
   } catch {
     // The list is still saved locally when URL updates are unavailable.
   }
+}
+
+function getSupabaseConfig() {
+  const url = supabaseConfig.url.trim().replace(/\/rest\/v1\/?$/, '')
+  const anonKey = supabaseConfig.anonKey.trim()
+
+  if (!url || !anonKey) return null
+
+  return {
+    url,
+    anonKey,
+    table: supabaseConfig.table,
+    listKey: supabaseConfig.listKey,
+  }
+}
+
+function supabaseHeaders(config, extraHeaders = {}) {
+  return {
+    apikey: config.anonKey,
+    Authorization: `Bearer ${config.anonKey}`,
+    ...extraHeaders,
+  }
+}
+
+async function fetchCloudTodos() {
+  const config = getSupabaseConfig()
+
+  if (!config) return null
+
+  const endpoint = `${config.url}/rest/v1/${config.table}?list_key=eq.${encodeURIComponent(config.listKey)}&select=todos&limit=1`
+  const response = await fetch(endpoint, {
+    headers: supabaseHeaders(config),
+  })
+
+  if (!response.ok) throw new Error(`Supabase select failed: ${response.status}`)
+
+  const rows = await response.json()
+
+  if (!rows.length) return []
+
+  return normalizeTodos(rows[0].todos) || []
+}
+
+async function saveCloudTodos(todos) {
+  const config = getSupabaseConfig()
+
+  if (!config) return false
+
+  const endpoint = `${config.url}/rest/v1/${config.table}?on_conflict=list_key`
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: supabaseHeaders(config, {
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates,return=minimal',
+    }),
+    body: JSON.stringify({
+      list_key: config.listKey,
+      todos,
+      updated_at: new Date().toISOString(),
+    }),
+  })
+
+  if (!response.ok) throw new Error(`Supabase upsert failed: ${response.status}`)
+
+  return true
 }
 
 function BusinessCard({ name, title, email, bio }) {
@@ -210,8 +280,14 @@ function App() {
   const [todoInput, setTodoInput] = useState('')
   const [todos, setTodos] = useState(loadSavedTodos)
   const [copyStatus, setCopyStatus] = useState('')
+  const [syncStatus, setSyncStatus] = useState('本機保存')
+  const cloudReadyRef = useRef(false)
+  const latestTodosRef = useRef(todos)
+  const heroVideoRef = useRef(null)
 
   useEffect(() => {
+    latestTodosRef.current = todos
+
     try {
       window.localStorage.setItem(todoStorageKey, JSON.stringify(todos))
     } catch {
@@ -220,8 +296,76 @@ function App() {
 
     syncTodosToUrl(todos)
 
+    if (cloudReadyRef.current) {
+      saveCloudTodos(todos)
+        .then((synced) => setSyncStatus(synced ? '雲端已同步' : '本機保存'))
+        .catch(() => setSyncStatus('雲端同步失敗，已本機保存'))
+    }
+
     console.log(`目前共有 ${todos.length} 項任務`)
   }, [todos])
+
+  useEffect(() => {
+    let isCancelled = false
+
+    async function loadCloudTodos() {
+      const config = getSupabaseConfig()
+
+      if (!config) {
+        cloudReadyRef.current = true
+        setSyncStatus('本機保存')
+        return
+      }
+
+      try {
+        const cloudTodos = await fetchCloudTodos()
+
+        if (isCancelled) return
+
+        if (cloudTodos) {
+          setTodos(cloudTodos)
+        } else {
+          await saveCloudTodos(latestTodosRef.current)
+        }
+
+        cloudReadyRef.current = true
+        setSyncStatus('雲端已同步')
+      } catch {
+        cloudReadyRef.current = true
+        setSyncStatus('雲端同步失敗，已本機保存')
+      }
+    }
+
+    loadCloudTodos()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    const config = getSupabaseConfig()
+
+    if (!config) return undefined
+
+    const timer = window.setInterval(async () => {
+      try {
+        const cloudTodos = await fetchCloudTodos()
+
+        if (!cloudTodos) return
+
+        if (JSON.stringify(cloudTodos) !== JSON.stringify(latestTodosRef.current)) {
+          setTodos(cloudTodos)
+        }
+
+        setSyncStatus('雲端已同步')
+      } catch {
+        setSyncStatus('雲端同步失敗，已本機保存')
+      }
+    }, 12000)
+
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     if (!copyStatus) return undefined
@@ -230,6 +374,17 @@ function App() {
 
     return () => window.clearTimeout(timer)
   }, [copyStatus])
+
+  useEffect(() => {
+    const video = heroVideoRef.current
+
+    if (!video) return undefined
+
+    video.currentTime = 0
+    video.play().catch(() => {})
+
+    return undefined
+  }, [])
 
   const handleAddTodo = () => {
     if (todoInput.trim() === '') return
@@ -265,16 +420,25 @@ function App() {
     }
   }
 
+  const handleHeroVideoReplay = () => {
+    const video = heroVideoRef.current
+
+    if (!video) return
+
+    video.currentTime = 0
+    video.play().catch(() => {})
+  }
+
   return (
     <main className="site-shell">
       <section className="hero-section" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">STUST JavaScript Final Project</p>
-          <h1 id="hero-title">南臺科技大學 JavaScript 期末專題</h1>
-          <p className="hero-text">
-            這裡整理了個人名片、學習方向與待辦清單練習，讓 React 的 state、
-            props、event handler 不只停在範例，也變成可以展示的頁面。
-          </p>
+          <p className="eyebrow">Portfolio Hub</p>
+          <h1 id="hero-title">
+            <span className="hero-title-line hero-title-line-top">你有想法</span>
+            <span className="hero-title-line hero-title-line-bottom">我有辦法</span>
+          </h1>
+          <p className="hero-text">將想法轉化為可執行的產品與體驗</p>
 
           <div className="hero-actions" aria-label="快速連結">
             <a href={`mailto:${profile.email}`} className="primary-action">
@@ -287,10 +451,15 @@ function App() {
         </div>
 
         <div className="hero-visual" aria-hidden="true">
-          <div className="hero-orb" />
-          <div className="floating-note">
-            <span>React</span>
-            <strong>Hooks + UI</strong>
+          <div className="hero-video-card" onMouseEnter={handleHeroVideoReplay}>
+            <video
+              ref={heroVideoRef}
+              src={`${import.meta.env.BASE_URL}gengar-miniq-animation.mp4`}
+              muted
+              playsInline
+              autoPlay
+              preload="auto"
+            />
           </div>
         </div>
       </section>
@@ -340,7 +509,7 @@ function App() {
           <button type="button" onClick={handleCopyTodoLink}>
             複製清單連結
           </button>
-          {copyStatus && <span role="status">{copyStatus}</span>}
+          <span role="status">{copyStatus || syncStatus}</span>
         </div>
 
         <ul className="todo-list">
